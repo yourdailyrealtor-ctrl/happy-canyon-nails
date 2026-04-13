@@ -5,9 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Happy Canyon Nails &amp; Spa | Castle Rock, CO</title>
   <meta name="description" content="Castle Rock's most-loved nail salon. 4.8 stars, 483 reviews. Gel, acrylic, dip powder, pedicures & nail art. Open 7 days. Walk-ins welcome." />
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
   <style>
     :root {
       --blush:  #f7ede8;
@@ -22,40 +29,62 @@
     }
 
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); -webkit-font-smoothing: antialiased; }
+    html { overflow-x: hidden; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+    /* ── GRAIN OVERLAY ── */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+      opacity: 0.028;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ── CUSTOM CURSOR (desktop only) ── */
+    .cursor {
+      position: fixed; top: 0; left: 0; z-index: 10000; pointer-events: none;
+      width: 12px; height: 12px;
+      background: var(--rose); border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.25s, height 0.25s, background 0.25s, opacity 0.25s;
+      will-change: transform;
+    }
+    .cursor.hovered { width: 32px; height: 32px; background: var(--rose2); opacity: 0.6; }
+    @media (hover: none) { .cursor { display: none; } }
 
     /* ── NAV ── */
     nav {
-      position: fixed; inset: 0 0 auto; z-index: 200;
+      position: fixed; inset: 0 0 auto; z-index: 500;
       display: flex; justify-content: space-between; align-items: center;
       padding: 0 3rem; height: 68px;
-      background: rgba(253,249,247,0.97);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      transition: box-shadow 0.3s;
+      background: rgba(253,249,247,0.97); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border); transition: box-shadow 0.3s;
     }
-    nav.scrolled { box-shadow: 0 2px 20px rgba(44,31,26,0.08); }
+    nav.scrolled { box-shadow: 0 2px 24px rgba(44,31,26,0.08); }
 
     .nav-brand { text-decoration: none; }
     .nav-brand-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--deep); display: block; }
     .nav-brand-sub { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--rose); }
 
-    .nav-links { display: flex; gap: 0; list-style: none; align-items: center; }
+    .nav-links { display: flex; list-style: none; align-items: center; }
     .nav-links a {
       display: block; padding: 0 1.1rem; height: 68px; line-height: 68px;
       text-decoration: none; color: var(--muted);
       font-size: 0.78rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
-      transition: color 0.2s;
-      border-bottom: 2px solid transparent;
+      position: relative; transition: color 0.2s;
     }
-    .nav-links a:hover, .nav-links a.active { color: var(--rose); border-bottom-color: var(--rose); }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: 0; left: 1.1rem; right: 1.1rem; height: 2px;
+      background: var(--rose); transform: scaleX(0); transform-origin: left;
+      transition: transform 0.25s ease;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--rose); }
+    .nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
     .nav-links .nav-cta {
-      margin-left: 0.5rem;
-      background: var(--rose); color: white !important; border-radius: 2px;
-      height: auto; line-height: 1; padding: 0.6rem 1.3rem;
-      border-bottom: none !important;
+      margin-left: 0.8rem; background: var(--rose); color: white !important;
+      border-radius: 2px; height: auto; line-height: 1; padding: 0.6rem 1.3rem;
     }
+    .nav-links .nav-cta::after { display: none; }
     .nav-links .nav-cta:hover { background: var(--deep) !important; }
 
     /* Hamburger */
@@ -67,133 +96,108 @@
 
     /* Mobile menu */
     .mobile-menu {
-      display: none; position: fixed; top: 68px; inset-inline: 0; z-index: 190;
+      display: none; position: fixed; top: 68px; inset-inline: 0; z-index: 490;
       background: var(--cream); border-bottom: 1px solid var(--border);
-      padding: 1rem 0;
-      box-shadow: 0 8px 24px rgba(44,31,26,0.1);
+      padding: 1rem 0; box-shadow: 0 8px 24px rgba(44,31,26,0.1);
     }
     .mobile-menu.open { display: block; }
-    .mobile-menu a {
-      display: block; padding: 0.85rem 2rem;
-      text-decoration: none; color: var(--text);
-      font-size: 0.9rem; font-weight: 500;
-      border-bottom: 1px solid var(--border);
-    }
+    .mobile-menu a { display: block; padding: 0.85rem 2rem; text-decoration: none; color: var(--text); font-size: 0.9rem; font-weight: 500; border-bottom: 1px solid var(--border); }
     .mobile-menu a:last-child { border-bottom: none; color: var(--rose); font-weight: 600; }
 
-    /* ── PAGE SECTIONS (shown/hidden) ── */
+    /* ── PAGES ── */
     .page { display: none; padding-top: 68px; }
     .page.active { display: block; }
 
     /* ── SHARED ── */
-    .section { padding: 5rem 2rem; }
+    .section { padding: 5.5rem 2rem; }
     .container { max-width: 1100px; margin: 0 auto; }
-    .eyebrow {
-      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--rose); margin-bottom: 0.8rem;
-      display: flex; align-items: center; gap: 0.7rem;
-    }
+    .eyebrow { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--rose); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.7rem; }
     .eyebrow::before { content: ''; width: 24px; height: 1px; background: var(--rose); flex-shrink: 0; }
-    .section-title {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-      font-weight: 500; color: var(--deep); line-height: 1.15; margin-bottom: 1rem;
-    }
+    .section-title { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 500; color: var(--deep); line-height: 1.15; margin-bottom: 1rem; }
     .section-lead { font-size: 0.95rem; font-weight: 300; color: var(--muted); max-width: 520px; line-height: 1.8; margin-bottom: 3rem; }
 
     /* ── BUTTONS ── */
     .btn-primary {
       display: inline-flex; align-items: center; gap: 0.5rem;
-      background: var(--rose); color: white;
-      padding: 0.9rem 2.2rem; text-decoration: none;
-      font-size: 0.8rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
-      border-radius: 2px; border: none; cursor: pointer;
-      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      background: var(--rose); color: white; padding: 0.9rem 2.2rem;
+      text-decoration: none; font-size: 0.8rem; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase; border-radius: 2px;
+      border: none; cursor: pointer; position: relative; overflow: hidden;
+      transition: background 0.2s, box-shadow 0.2s;
       box-shadow: 0 4px 16px rgba(184,114,90,0.28);
     }
-    .btn-primary:hover { background: var(--deep); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(44,31,26,0.18); }
+    .btn-primary:hover { background: var(--deep); box-shadow: 0 6px 22px rgba(44,31,26,0.2); }
     .btn-outline {
       display: inline-flex; align-items: center; gap: 0.5rem;
-      border: 1.5px solid var(--rose); color: var(--rose);
-      padding: 0.9rem 2.2rem; text-decoration: none;
-      font-size: 0.8rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
-      border-radius: 2px; cursor: pointer; background: transparent;
-      transition: all 0.2s;
+      border: 1.5px solid var(--rose); color: var(--rose); padding: 0.9rem 2.2rem;
+      text-decoration: none; font-size: 0.8rem; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase; border-radius: 2px;
+      cursor: pointer; background: transparent; transition: all 0.2s;
     }
-    .btn-outline:hover { background: var(--rose); color: white; transform: translateY(-2px); }
+    .btn-outline:hover { background: var(--rose); color: white; }
+    .btn-white { display: inline-flex; align-items: center; gap: 0.6rem; background: white; color: var(--rose); padding: 0.95rem 2.4rem; text-decoration: none; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 2px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 18px rgba(0,0,0,0.12); }
+    .btn-white:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.18); }
 
-    /* ── HOME PAGE ── */
+    /* ── HERO ── */
     .hero {
-      min-height: calc(100vh - 68px);
-      display: grid; place-items: center; text-align: center;
-      padding: 4rem 2rem;
+      min-height: calc(100vh - 68px); display: grid; place-items: center;
+      text-align: center; padding: 4rem 2rem;
       background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(184,114,90,0.10) 0%, transparent 65%),
                   linear-gradient(170deg, var(--blush) 0%, var(--cream) 55%);
       position: relative; overflow: hidden;
     }
-
-    .hero-pill {
-      display: inline-block; border: 1px solid var(--rose2); color: var(--rose);
-      font-size: 0.7rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
-      padding: 0.4rem 1.1rem; border-radius: 100px; margin-bottom: 1.8rem;
-    }
-    .hero h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2.8rem, 6vw, 5rem); font-weight: 500;
-      color: var(--deep); line-height: 1.08; margin-bottom: 1.4rem;
-    }
+    .hero-pill { display: inline-block; border: 1px solid var(--rose2); color: var(--rose); font-size: 0.7rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; padding: 0.4rem 1.1rem; border-radius: 100px; margin-bottom: 1.8rem; opacity: 0; }
+    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.8rem, 6vw, 5rem); font-weight: 500; color: var(--deep); line-height: 1.08; margin-bottom: 1.4rem; }
+    .hero h1 .word { display: inline-block; overflow: hidden; }
+    .hero h1 .word-inner { display: inline-block; opacity: 0; transform: translateY(40px); }
     .hero h1 em { font-style: italic; color: var(--rose); }
-    .hero-sub { font-size: 1rem; font-weight: 300; color: var(--muted); max-width: 420px; margin: 0 auto 2rem; line-height: 1.8; }
-    .hero-rating {
-      display: inline-flex; align-items: center; gap: 0.7rem;
-      background: white; border: 1px solid var(--border); border-radius: 100px;
-      padding: 0.5rem 1.3rem; margin-bottom: 2.2rem;
-      box-shadow: 0 2px 12px rgba(44,31,26,0.05);
-    }
+    .hero-sub { font-size: 1rem; font-weight: 300; color: var(--muted); max-width: 420px; margin: 0 auto 2rem; line-height: 1.8; opacity: 0; }
+    .hero-rating { display: inline-flex; align-items: center; gap: 0.7rem; background: white; border: 1px solid var(--border); border-radius: 100px; padding: 0.5rem 1.3rem; margin-bottom: 2.2rem; box-shadow: 0 2px 12px rgba(44,31,26,0.05); opacity: 0; }
     .hero-rating .stars { color: var(--gold); font-size: 0.85rem; }
     .hero-rating .score { font-size: 0.85rem; font-weight: 700; color: var(--deep); }
     .hero-rating .label { font-size: 0.78rem; color: var(--muted); }
-    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; opacity: 0; }
 
-    /* Photo strip */
-    .photo-strip { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 3px; height: 360px; }
+    /* ── PHOTO STRIP ── */
+    .photo-strip { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 3px; height: 380px; }
     .photo-wrap { overflow: hidden; position: relative; }
-    .photo-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; filter: brightness(0.93) saturate(1.05); }
-    .photo-wrap:hover img { transform: scale(1.04); filter: brightness(1); }
-    .photo-wrap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 55%, rgba(44,31,26,0.12)); pointer-events: none; }
+    @keyframes kenburns { 0% { transform: scale(1); } 100% { transform: scale(1.06); } }
+    .photo-wrap img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.93) saturate(1.05); animation: kenburns 8s ease-in-out infinite alternate; }
+    .photo-wrap:nth-child(2) img { animation-delay: -2.5s; animation-direction: alternate-reverse; }
+    .photo-wrap:nth-child(3) img { animation-delay: -5s; }
+    .photo-wrap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 55%, rgba(44,31,26,0.14)); pointer-events: none; }
 
-    /* Stats bar */
-    .stats-bar { background: var(--deep); padding: 2.5rem 2rem; }
+    /* ── STATS BAR ── */
+    .stats-bar { background: var(--deep); padding: 2.8rem 2rem; }
     .stats-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; }
     .stat { text-align: center; }
     .stat-num { font-family: 'Playfair Display', serif; font-size: 2.6rem; font-weight: 700; color: white; display: block; line-height: 1; }
     .stat-label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-top: 0.4rem; }
     .stat-div { width: 1px; height: 40px; background: rgba(255,255,255,0.1); align-self: center; }
 
-    /* Home services preview */
+    /* ── SERVICES ── */
     .home-services { background: var(--cream); }
     .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.4rem; }
     .service-card {
       background: white; padding: 2rem 1.8rem; border-radius: 3px; border: 1px solid var(--border);
-      position: relative; overflow: hidden; transition: transform 0.25s, box-shadow 0.25s;
+      position: relative; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s;
     }
-    .service-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--rose), var(--gold));
-      transform: scaleX(0); transform-origin: left; transition: transform 0.3s;
-    }
-    .service-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(44,31,26,0.08); }
+    .service-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--rose), var(--gold)); transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
+    .service-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(184,114,90,0.06) 0%, transparent 60%); opacity: 0; transition: opacity 0.3s; }
+    .service-card:hover { transform: translateY(-5px); box-shadow: 0 14px 36px rgba(44,31,26,0.09); }
     .service-card:hover::before { transform: scaleX(1); }
-    .service-icon { font-size: 1.6rem; margin-bottom: 0.9rem; display: block; }
-    .service-card h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; color: var(--deep); margin-bottom: 0.5rem; }
-    .service-card p { font-size: 0.86rem; line-height: 1.7; color: var(--muted); }
+    .service-card:hover::after { opacity: 1; }
+    .service-icon { font-size: 1.6rem; margin-bottom: 0.9rem; display: block; position: relative; z-index: 1; }
+    .service-card h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; color: var(--deep); margin-bottom: 0.5rem; position: relative; z-index: 1; }
+    .service-card p { font-size: 0.86rem; line-height: 1.7; color: var(--muted); position: relative; z-index: 1; }
 
-    /* Home reviews */
+    /* ── REVIEWS ── */
     .home-reviews { background: var(--blush); }
     .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.3rem; }
-    .review-card { background: white; padding: 1.8rem; border-radius: 3px; border: 1px solid var(--border); transition: transform 0.2s; }
-    .review-card:hover { transform: translateY(-3px); }
-    .review-quote { font-size: 3rem; line-height: 0.6; color: var(--rose2); opacity: 0.25; font-family: Georgia, serif; margin-bottom: 0.4rem; display: block; }
+    .review-card { background: white; padding: 1.8rem; border-radius: 3px; border: 1px solid var(--border); transition: transform 0.25s, box-shadow 0.25s; }
+    .review-card:nth-child(odd):hover { transform: rotate(-1.2deg) translateY(-3px); box-shadow: 0 10px 28px rgba(44,31,26,0.08); }
+    .review-card:nth-child(even):hover { transform: rotate(1.2deg) translateY(-3px); box-shadow: 0 10px 28px rgba(44,31,26,0.08); }
+    .review-quote { font-size: 3rem; line-height: 0.6; color: var(--rose2); opacity: 0.22; font-family: Georgia, serif; margin-bottom: 0.4rem; display: block; }
     .review-stars { color: var(--gold); font-size: 0.8rem; margin-bottom: 0.8rem; }
     .review-text { font-size: 0.87rem; line-height: 1.75; color: var(--text); margin-bottom: 1.2rem; font-style: italic; }
     .review-author { display: flex; align-items: center; gap: 0.6rem; }
@@ -201,99 +205,83 @@
     .review-name { font-size: 0.77rem; font-weight: 600; color: var(--deep); text-transform: uppercase; letter-spacing: 0.05em; }
     .review-platform { font-size: 0.7rem; color: var(--muted); }
 
-    /* CTA band */
-    .cta-band {
-      background: linear-gradient(135deg, var(--rose) 0%, var(--deep) 100%);
-      text-align: center; padding: 5rem 2rem; position: relative; overflow: hidden;
-    }
+    /* ── CTA BAND ── */
+    .cta-band { background: linear-gradient(135deg, var(--rose) 0%, var(--deep) 100%); text-align: center; padding: 5.5rem 2rem; }
     .cta-band h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 500; color: white; margin-bottom: 0.9rem; }
     .cta-band p { font-size: 0.95rem; color: rgba(255,255,255,0.8); margin-bottom: 2.2rem; font-weight: 300; }
-    .btn-white { display: inline-flex; align-items: center; gap: 0.6rem; background: white; color: var(--rose); padding: 0.95rem 2.4rem; text-decoration: none; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 2px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 18px rgba(0,0,0,0.12); }
-    .btn-white:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.18); }
 
     /* ── SERVICES PAGE ── */
-    .services-page { background: var(--cream); }
-    .services-hero { background: var(--blush); padding: 4rem 2rem; text-align: center; }
-    .services-hero .section-title { margin: 0 auto 0.5rem; }
-    .services-hero p { color: var(--muted); font-size: 0.95rem; font-weight: 300; max-width: 480px; margin: 0.5rem auto 0; line-height: 1.8; }
-
+    .page-hero { padding: 4rem 2rem; text-align: center; background: var(--blush); }
+    .page-hero p { color: var(--muted); font-size: 0.95rem; font-weight: 300; max-width: 460px; margin: 0.5rem auto 0; line-height: 1.8; }
     .services-full-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
-    .service-full-card { background: white; border-radius: 3px; border: 1px solid var(--border); overflow: hidden; }
+    .service-full-card { background: white; border-radius: 3px; border: 1px solid var(--border); overflow: hidden; transition: transform 0.25s, box-shadow 0.25s; }
+    .service-full-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(44,31,26,0.08); }
     .service-full-card-head { background: var(--blush); padding: 1.8rem 2rem 1.4rem; }
     .service-full-card-head .icon { font-size: 2rem; display: block; margin-bottom: 0.7rem; }
     .service-full-card-head h3 { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 600; color: var(--deep); }
     .service-full-card-body { padding: 1.6rem 2rem; }
     .service-full-card-body p { font-size: 0.88rem; line-height: 1.75; color: var(--muted); margin-bottom: 1.2rem; }
-    .price-tag { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--blush); color: var(--rose); font-size: 0.78rem; font-weight: 600; padding: 0.35rem 0.8rem; border-radius: 100px; }
+    .badge { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--blush); color: var(--rose); font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.8rem; border-radius: 100px; }
+    .book-band { background: var(--blush); padding: 2.5rem 2rem; border-radius: 4px; text-align: center; margin-top: 3.5rem; }
+    .book-band h3 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--deep); margin-bottom: 0.7rem; }
+    .book-band p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .book-band-btns { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; }
 
-    /* ── GALLERY / REVIEWS PAGE ── */
-    .gallery-page { background: var(--cream); }
-    .gallery-hero { background: var(--blush); padding: 4rem 2rem; text-align: center; }
-    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 3px; margin-top: 0; }
+    /* ── GALLERY/REVIEWS PAGE ── */
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 3px; }
     .gallery-item { overflow: hidden; aspect-ratio: 1; }
-    .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s, filter 0.3s; filter: brightness(0.95); }
-    .gallery-item:hover img { transform: scale(1.06); filter: brightness(1.05); }
-
-    .reviews-page-section { background: var(--cream); }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s, filter 0.3s; filter: brightness(0.94); }
+    .gallery-item:hover img { transform: scale(1.06); filter: brightness(1.04); }
     .reviews-all-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.3rem; margin-top: 3rem; }
 
     /* ── CONTACT PAGE ── */
-    .contact-page { background: var(--cream); }
-    .contact-hero { background: var(--blush); padding: 4rem 2rem; text-align: center; }
     .contact-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 4rem; align-items: start; margin-top: 3rem; }
-
     .contact-form { background: white; padding: 2.5rem; border-radius: 4px; border: 1px solid var(--border); }
     .contact-form h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 600; color: var(--deep); margin-bottom: 1.5rem; }
     .form-group { margin-bottom: 1.2rem; }
-    .form-group label { display: block; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%; padding: 0.8rem 1rem; border: 1px solid var(--border); border-radius: 2px;
-      font-family: 'Inter', sans-serif; font-size: 0.9rem; color: var(--text); background: var(--cream);
-      transition: border-color 0.2s, box-shadow 0.2s; outline: none;
-    }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-      border-color: var(--rose); box-shadow: 0 0 0 3px rgba(184,114,90,0.1);
-    }
+    .form-group label { display: block; font-size: 0.77rem; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.8rem 1rem; border: 1px solid var(--border); border-radius: 2px; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: var(--text); background: var(--cream); transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(184,114,90,0.1); }
     .form-group textarea { resize: vertical; min-height: 110px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .form-success { display: none; background: #e8f5e9; border: 1px solid #a5d6a7; color: #2e7d32; padding: 1rem 1.2rem; border-radius: 2px; font-size: 0.88rem; margin-top: 1rem; }
-
-    .contact-info { }
+    .form-success { display: none; background: #f0faf0; border: 1px solid #b2dfb2; color: #2e7d32; padding: 1rem 1.2rem; border-radius: 2px; font-size: 0.88rem; margin-top: 1rem; }
     .info-card { background: white; border-radius: 3px; border: 1px solid var(--border); padding: 2rem; margin-bottom: 1.2rem; }
     .info-card h4 { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; color: var(--deep); margin-bottom: 1.2rem; }
     .info-row { display: flex; align-items: flex-start; gap: 0.8rem; margin-bottom: 0.9rem; font-size: 0.88rem; color: var(--muted); line-height: 1.5; }
-    .info-row .icon { color: var(--rose); font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+    .info-row .icon { color: var(--rose); flex-shrink: 0; margin-top: 1px; }
     .info-row a { color: var(--rose); text-decoration: none; }
     .info-row a:hover { text-decoration: underline; }
-    .hours-compact { }
-    .hours-compact li { display: flex; justify-content: space-between; font-size: 0.87rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); color: var(--muted); }
-    .hours-compact li:last-child { border-bottom: none; }
-    .hours-compact li span:last-child { font-weight: 500; color: var(--text); }
+    .hours-list { list-style: none; }
+    .hours-list li { display: flex; justify-content: space-between; font-size: 0.87rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+    .hours-list li:last-child { border-bottom: none; }
+    .hours-list li span:last-child { font-weight: 500; color: var(--text); }
     .map-box { border-radius: 3px; overflow: hidden; border: 1px solid var(--border); margin-top: 1.2rem; }
 
     /* ── FOOTER ── */
     footer { background: #1c1210; }
-    .footer-inner {
-      max-width: 1100px; margin: 0 auto; padding: 3.5rem 2rem 2rem;
-      display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem;
-    }
+    .footer-inner { max-width: 1100px; margin: 0 auto; padding: 3.5rem 2rem 2rem; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; }
     .footer-brand .name { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: white; }
-    .footer-brand .tagline { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-top: 0.4rem; line-height: 1.6; max-width: 220px; }
-    .footer-brand .rating { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 1rem; background: rgba(255,255,255,0.05); padding: 0.4rem 0.8rem; border-radius: 2px; }
-    .footer-brand .rating .stars { color: var(--gold); font-size: 0.75rem; }
-    .footer-brand .rating span { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
-    .footer-col h5 { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 1rem; }
+    .footer-brand .tagline { font-size: 0.8rem; color: rgba(255,255,255,0.38); margin-top: 0.5rem; line-height: 1.7; max-width: 220px; }
+    .footer-rating { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 1rem; background: rgba(255,255,255,0.05); padding: 0.4rem 0.8rem; border-radius: 2px; }
+    .footer-rating .stars { color: var(--gold); font-size: 0.75rem; }
+    .footer-rating span { font-size: 0.75rem; color: rgba(255,255,255,0.45); }
+    .footer-col h5 { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 1rem; }
     .footer-col ul { list-style: none; }
-    .footer-col ul li { margin-bottom: 0.6rem; }
-    .footer-col ul li a { font-size: 0.85rem; color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.2s; cursor: pointer; }
+    .footer-col ul li { margin-bottom: 0.55rem; }
+    .footer-col ul li a { font-size: 0.84rem; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; cursor: pointer; }
     .footer-col ul li a:hover { color: var(--rose2); }
-    .footer-col p { font-size: 0.84rem; color: rgba(255,255,255,0.5); line-height: 1.8; }
+    .footer-col p { font-size: 0.83rem; color: rgba(255,255,255,0.45); line-height: 1.85; }
     .footer-col p a { color: var(--gold); text-decoration: none; }
-    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.07); padding: 1.2rem 2rem; text-align: center; font-size: 0.73rem; color: rgba(255,255,255,0.25); max-width: 1100px; margin: 0 auto; }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.07); padding: 1.2rem 2rem; text-align: center; font-size: 0.72rem; color: rgba(255,255,255,0.22); max-width: 1100px; margin: 0 auto; }
 
-    /* ── ANIMATIONS ── */
-    .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.55s ease, transform 0.55s ease; }
-    .fade-up.visible { opacity: 1; transform: none; }
+    /* ── GSAP PREP ── */
+    .gsap-fade { opacity: 0; }
+
+    /* ── REDUCED MOTION ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
+      .cursor { display: none !important; }
+    }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 900px) {
@@ -305,7 +293,7 @@
       nav { padding: 0 1.4rem; }
       .nav-links { display: none; }
       .hamburger { display: flex; }
-      .photo-strip { grid-template-columns: 1fr 1fr; height: 240px; }
+      .photo-strip { grid-template-columns: 1fr 1fr; height: 260px; }
       .photo-wrap:last-child { display: none; }
       .hero-actions { flex-direction: column; align-items: center; }
       .btn-primary, .btn-outline { width: 100%; max-width: 280px; justify-content: center; }
@@ -316,25 +304,26 @@
 </head>
 <body>
 
+<!-- Custom cursor -->
+<div class="cursor" id="cursor"></div>
+
 <!-- ── NAV ── -->
 <nav id="nav">
-  <a class="nav-brand" href="#" onclick="showPage('home')">
+  <a class="nav-brand" href="#" onclick="return showPage('home')">
     <span class="nav-brand-name">Happy Canyon Nails &amp; Spa</span>
     <span class="nav-brand-sub">Castle Rock, Colorado</span>
   </a>
-  <ul class="nav-links" id="navLinks">
-    <li><a href="#" onclick="showPage('home')" class="active" id="nav-home">Home</a></li>
-    <li><a href="#" onclick="showPage('services')" id="nav-services">Services</a></li>
-    <li><a href="#" onclick="showPage('gallery')" id="nav-gallery">Reviews</a></li>
-    <li><a href="#" onclick="showPage('contact')" id="nav-contact">Contact</a></li>
+  <ul class="nav-links">
+    <li><a href="#" onclick="return showPage('home')" class="active" id="nav-home">Home</a></li>
+    <li><a href="#" onclick="return showPage('services')" id="nav-services">Services</a></li>
+    <li><a href="#" onclick="return showPage('gallery')" id="nav-gallery">Reviews</a></li>
+    <li><a href="#" onclick="return showPage('contact')" id="nav-contact">Contact</a></li>
     <li><a href="tel:7207331110" class="nav-cta">&#128222; Call Now</a></li>
   </ul>
-  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Open menu">
     <span></span><span></span><span></span>
   </button>
 </nav>
-
-<!-- Mobile menu -->
 <div class="mobile-menu" id="mobileMenu">
   <a href="#" onclick="showPage('home');toggleMenu()">Home</a>
   <a href="#" onclick="showPage('services');toggleMenu()">Services</a>
@@ -343,181 +332,133 @@
   <a href="tel:7207331110">&#128222; Call (720) 733-1110</a>
 </div>
 
-<!-- ════════════════════════════
-     HOME PAGE
-════════════════════════════ -->
+<!-- ══════════════ HOME ══════════════ -->
 <div class="page active" id="page-home">
 
-  <section class="hero">
+  <section class="hero" id="hero">
     <div>
-      <span class="hero-pill">Castle Rock&#8217;s favorite nail salon</span>
-      <h1>Where every visit<br />feels like <em>a treat.</em></h1>
-      <p class="hero-sub">Rose and the team have been perfecting nails in Castle Rock for years. Nearly 500 five-star reviews don&#8217;t lie.</p>
-      <div class="hero-rating">
+      <div class="hero-pill" id="hero-pill">Castle Rock&#8217;s favorite nail salon</div>
+      <h1 id="hero-h1">
+        <span class="word"><span class="word-inner">Where</span></span>&#32;
+        <span class="word"><span class="word-inner">every</span></span>&#32;
+        <span class="word"><span class="word-inner">visit</span></span><br>
+        <span class="word"><span class="word-inner">feels</span></span>&#32;
+        <span class="word"><span class="word-inner">like</span></span>&#32;
+        <span class="word"><span class="word-inner"><em>a&#32;treat.</em></span></span>
+      </h1>
+      <p class="hero-sub" id="hero-sub">Rose and the team have been perfecting nails in Castle Rock for years. 483 five-star reviews don&#8217;t happen by accident.</p>
+      <div class="hero-rating" id="hero-rating">
         <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
         <span class="score">4.8</span>
         <span class="label">&#183; 483 Google reviews</span>
       </div>
-      <div class="hero-actions">
-        <a href="tel:7207331110" class="btn-primary">&#128222; Call to Book</a>
-        <a href="#" onclick="showPage('services')" class="btn-outline">Our Services</a>
+      <div class="hero-actions" id="hero-actions">
+        <a href="tel:7207331110" class="btn-primary magnetic">&#128222; Call to Book</a>
+        <a href="#" onclick="return showPage('services')" class="btn-outline magnetic">Our Services</a>
       </div>
     </div>
   </section>
 
   <div class="photo-strip">
-    <div class="photo-wrap fade-up"><img src="img/photo1.jpg" alt="Nail art" /></div>
-    <div class="photo-wrap fade-up"><img src="img/photo2.jpg" alt="Salon interior" /></div>
-    <div class="photo-wrap fade-up"><img src="img/photo3.jpg" alt="Pedicure" /></div>
+    <div class="photo-wrap"><img src="img/photo1.jpg" alt="Nail art" /></div>
+    <div class="photo-wrap"><img src="img/photo2.jpg" alt="Salon interior" /></div>
+    <div class="photo-wrap"><img src="img/photo3.jpg" alt="Pedicure service" /></div>
   </div>
 
   <div class="stats-bar">
     <div class="stats-inner">
-      <div class="stat"><span class="stat-num">4.8</span><span class="stat-label">Star Rating</span></div>
+      <div class="stat"><span class="stat-num" data-count="4.8" data-decimals="1" id="stat0">0</span><span class="stat-label">Star Rating</span></div>
       <div class="stat-div"></div>
-      <div class="stat"><span class="stat-num">483</span><span class="stat-label">Google Reviews</span></div>
+      <div class="stat"><span class="stat-num" data-count="483" data-decimals="0" id="stat1">0</span><span class="stat-label">Google Reviews</span></div>
       <div class="stat-div"></div>
-      <div class="stat"><span class="stat-num">7</span><span class="stat-label">Days a Week</span></div>
+      <div class="stat"><span class="stat-num" data-count="7" data-decimals="0" id="stat2">0</span><span class="stat-label">Days a Week</span></div>
       <div class="stat-div"></div>
-      <div class="stat"><span class="stat-num">100%</span><span class="stat-label">Walk-Ins Welcome</span></div>
+      <div class="stat"><span class="stat-num" id="stat3">100%</span><span class="stat-label">Walk-Ins Welcome</span></div>
     </div>
   </div>
 
   <section class="section home-services">
     <div class="container">
-      <p class="eyebrow">What We Offer</p>
-      <h2 class="section-title">Every service, done with care</h2>
-      <p class="section-lead">From a quick gel refresh to a full set with custom art &#8212; the team takes the time to get it right every visit.</p>
+      <p class="eyebrow gsap-fade">What We Offer</p>
+      <h2 class="section-title gsap-fade">Every service, done with care</h2>
+      <p class="section-lead gsap-fade">From a quick gel refresh to a full set with custom art &#8212; the team takes the time to get it right, every single visit.</p>
       <div class="services-grid">
-        <div class="service-card fade-up"><span class="service-icon">&#128133;</span><h3>Gel &amp; Acrylic</h3><p>Natural overlays to full sets. Custom lengths, custom shapes. Gel that stays glossy.</p></div>
-        <div class="service-card fade-up"><span class="service-icon">&#10024;</span><h3>Dip Powder</h3><p>Long-lasting color, lighter feel. No UV lamp, hundreds of shades.</p></div>
-        <div class="service-card fade-up"><span class="service-icon">&#127796;</span><h3>Pedicures</h3><p>Classic to luxury. Hot stone, paraffin, or a solid pedi that actually lasts.</p></div>
-        <div class="service-card fade-up"><span class="service-icon">&#127912;</span><h3>Nail Art</h3><p>Bring a photo, describe the vibe. Rose and the team can make it happen.</p></div>
-        <div class="service-card fade-up"><span class="service-icon">&#128131;</span><h3>Manicures</h3><p>Clean shaping, quality polish, a finish that holds longer than expected.</p></div>
-        <div class="service-card fade-up"><span class="service-icon">&#9998;</span><h3>Walk-Ins Welcome</h3><p>No appointment needed. Calling ahead helps on weekends but you can usually walk right in.</p></div>
+        <div class="service-card gsap-fade"><span class="service-icon">&#128133;</span><h3>Gel &amp; Acrylic</h3><p>Natural overlays to full sets. Custom lengths and shapes. Gel that stays glossy for weeks.</p></div>
+        <div class="service-card gsap-fade"><span class="service-icon">&#10024;</span><h3>Dip Powder</h3><p>Long-lasting color, lighter feel. No UV lamp. Stronger than regular polish, hundreds of shades.</p></div>
+        <div class="service-card gsap-fade"><span class="service-icon">&#127796;</span><h3>Pedicures</h3><p>Classic to luxury. Hot stone, paraffin, or a solid pedi that takes its time.</p></div>
+        <div class="service-card gsap-fade"><span class="service-icon">&#127912;</span><h3>Nail Art</h3><p>Bring a photo. Describe the vibe. Rose and the team can execute anything from subtle to bold.</p></div>
+        <div class="service-card gsap-fade"><span class="service-icon">&#128131;</span><h3>Manicures</h3><p>Clean shaping, quality polish, a finish that holds. Done right, not rushed.</p></div>
+        <div class="service-card gsap-fade"><span class="service-icon">&#9998;</span><h3>Walk-Ins Welcome</h3><p>No appointment needed. Calling ahead helps on weekends but you can usually walk right in.</p></div>
       </div>
-      <div style="margin-top:2.5rem;text-align:center;">
-        <a href="#" onclick="showPage('services')" class="btn-outline">Full Service Menu</a>
+      <div style="margin-top:2.5rem;text-align:center;" class="gsap-fade">
+        <a href="#" onclick="return showPage('services')" class="btn-outline">Full Service Menu</a>
       </div>
     </div>
   </section>
 
   <section class="section home-reviews">
     <div class="container">
-      <p class="eyebrow">What People Are Saying</p>
-      <h2 class="section-title">Nearly 500 five-star reviews</h2>
-      <p class="section-lead">Real customers, real words. This is what people consistently say about Happy Canyon.</p>
+      <p class="eyebrow gsap-fade">What People Are Saying</p>
+      <h2 class="section-title gsap-fade">483 five-star reviews</h2>
+      <p class="section-lead gsap-fade">Real customers, real words. Here&#8217;s a snapshot of what they consistently say.</p>
       <div class="reviews-grid">
-        <div class="review-card fade-up">
-          <span class="review-quote">&#8220;</span>
-          <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p class="review-text">Rose takes special care to make sure I love my nails. I couldn&#8217;t recommend Happy Canyon Nails more!</p>
-          <div class="review-author"><div class="review-avatar">MH</div><div><div class="review-name">Madison H.</div><div class="review-platform">Google Review</div></div></div>
-        </div>
-        <div class="review-card fade-up">
-          <span class="review-quote">&#8220;</span>
-          <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p class="review-text">Justin does my nails and he&#8217;s amazing every single time. A truly experienced and well-trained professional.</p>
-          <div class="review-author"><div class="review-avatar">EW</div><div><div class="review-name">Elizabeth W.</div><div class="review-platform">Google Review</div></div></div>
-        </div>
-        <div class="review-card fade-up">
-          <span class="review-quote">&#8220;</span>
-          <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p class="review-text">I went in for a pedi and did not want to leave. They take such good care of you here. Best in Castle Rock.</p>
-          <div class="review-author"><div class="review-avatar">RS</div><div><div class="review-name">Rachel S.</div><div class="review-platform">Google Review</div></div></div>
-        </div>
-        <div class="review-card fade-up">
-          <span class="review-quote">&#8220;</span>
-          <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p class="review-text">Thein always makes my nails perfect and fits me in on short notice. Highly recommend for anyone in Castle Rock!</p>
-          <div class="review-author"><div class="review-avatar">BM</div><div><div class="review-name">Briana M.</div><div class="review-platform">Google Review</div></div></div>
-        </div>
+        <div class="review-card gsap-fade"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">Rose takes special care to make sure I love my nails. I couldn&#8217;t recommend Happy Canyon Nails more!</p><div class="review-author"><div class="review-avatar">MH</div><div><div class="review-name">Madison H.</div><div class="review-platform">Google Review</div></div></div></div>
+        <div class="review-card gsap-fade"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">I&#8217;ve been coming for over a year. Justin does my nails and he&#8217;s amazing every single time.</p><div class="review-author"><div class="review-avatar">EW</div><div><div class="review-name">Elizabeth W.</div><div class="review-platform">Google Review</div></div></div></div>
+        <div class="review-card gsap-fade"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">I went in for a pedi and did not want to leave. Best experience at any nail salon in Castle Rock.</p><div class="review-author"><div class="review-avatar">RS</div><div><div class="review-name">Rachel S.</div><div class="review-platform">Google Review</div></div></div></div>
+        <div class="review-card gsap-fade"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">Thein always makes my nails perfect and fits me in on short notice. Highly recommend!</p><div class="review-author"><div class="review-avatar">BM</div><div><div class="review-name">Briana M.</div><div class="review-platform">Google Review</div></div></div></div>
       </div>
-      <div style="margin-top:2.5rem;text-align:center;">
-        <a href="#" onclick="showPage('gallery')" class="btn-outline">See All Reviews</a>
+      <div style="margin-top:2.5rem;text-align:center;" class="gsap-fade">
+        <a href="#" onclick="return showPage('gallery')" class="btn-outline">See All Reviews</a>
       </div>
     </div>
   </section>
 
   <section class="cta-band">
-    <h2>Ready to treat yourself?</h2>
-    <p>Walk in anytime or give us a call. We&#8217;ll handle the rest.</p>
-    <a href="tel:7207331110" class="btn-white">&#128222; Call (720) 733-1110</a>
+    <h2 class="gsap-fade">Ready to treat yourself?</h2>
+    <p class="gsap-fade">Walk in anytime or give us a call. We&#8217;ll handle the rest.</p>
+    <a href="tel:7207331110" class="btn-white gsap-fade magnetic">&#128222; Call (720) 733-1110</a>
   </section>
 
-</div><!-- /page-home -->
+</div>
 
-<!-- ════════════════════════════
-     SERVICES PAGE
-════════════════════════════ -->
+<!-- ══════════════ SERVICES ══════════════ -->
 <div class="page" id="page-services">
-
-  <div class="services-hero">
+  <div class="page-hero">
     <p class="eyebrow" style="justify-content:center;">What We Offer</p>
     <h2 class="section-title" style="text-align:center;">Our Services</h2>
-    <p>Every service is done with attention and care. No rushing, no shortcuts.</p>
+    <p>Every service is done with care and attention. No rushing, no shortcuts.</p>
   </div>
-
-  <section class="section services-page">
+  <section class="section" style="background:var(--cream);">
     <div class="container">
       <div class="services-full-grid">
-        <div class="service-full-card fade-up">
-          <div class="service-full-card-head"><span class="icon">&#128133;</span><h3>Gel Nails</h3></div>
-          <div class="service-full-card-body"><p>Long-lasting gel polish applied over natural nails or extensions. Stays glossy and chip-free for 2&#8211;3 weeks. Great for clients who want low maintenance with a polished look.</p><span class="price-tag">&#9733; Most Popular</span></div>
-        </div>
-        <div class="service-full-card fade-up">
-          <div class="service-full-card-head"><span class="icon">&#128133;</span><h3>Acrylic Nails</h3></div>
-          <div class="service-full-card-body"><p>Full sets and fills. Custom lengths from natural to dramatic. Acrylic that holds up to daily wear. Shaped and filed to your preference every time.</p></div>
-        </div>
-        <div class="service-full-card fade-up">
-          <div class="service-full-card-head"><span class="icon">&#10024;</span><h3>Dip Powder</h3></div>
-          <div class="service-full-card-body"><p>The best of both worlds &#8212; stronger than regular polish, lighter than acrylic. No UV lamp needed. Hundreds of color options. Lasts 3&#8211;5 weeks.</p><span class="price-tag">&#9733; Staff Favorite</span></div>
-        </div>
-        <div class="service-full-card fade-up">
-          <div class="service-full-card-head"><span class="icon">&#127796;</span><h3>Classic Pedicure</h3></div>
-          <div class="service-full-card-body"><p>Soak, exfoliate, trim, shape, and polish. The foundation done properly. Ideal if you just want clean, well-maintained feet without the extras.</p></div>
-        </div>
-        <div class="service-full-card fade-up">
-          <div class="service-full-card-head"><span class="icon">&#127796;</span><h3>Spa &amp; Luxury Pedicures</h3></div>
-          <div class="service-full-card-body"><p>Upgraded pedicure experience with hot stone massage, paraffin wax treatment, and extended massage time. The kind of pedi you don&#8217;t want to end.</p><span class="price-tag">&#9733; Client Favorite</span></div>
-        </div>
-        <div class="service-full-card fade-up">
-          <div class="service-full-card-head"><span class="icon">&#128131;</span><h3>Classic Manicure</h3></div>
-          <div class="service-full-card-body"><p>Hand soak, cuticle care, shaping, and a polish of your choice. A clean, classic manicure done the right way &#8212; not rushed.</p></div>
-        </div>
-        <div class="service-full-card fade-up">
-          <div class="service-full-card-head"><span class="icon">&#127912;</span><h3>Nail Art</h3></div>
-          <div class="service-full-card-body"><p>From subtle accents to full custom designs. Bring a photo from Pinterest, Instagram &#8212; wherever. The team can recreate it or riff on it. No idea too intricate.</p><span class="price-tag">&#9733; Book Ahead</span></div>
-        </div>
-        <div class="service-full-card fade-up">
-          <div class="service-full-card-head"><span class="icon">&#128138;</span><h3>Nail Removal &amp; Repairs</h3></div>
-          <div class="service-full-card-body"><p>Safe removal of gel, acrylic, or dip powder. Single nail repairs done right, so the fix actually matches the rest. No damage to your natural nails.</p></div>
-        </div>
+        <div class="service-full-card gsap-fade"><div class="service-full-card-head"><span class="icon">&#128133;</span><h3>Gel Nails</h3></div><div class="service-full-card-body"><p>Long-lasting gel polish over natural nails or extensions. Stays glossy and chip-free for 2&#8211;3 weeks. Great for low-maintenance clients who still want a polished look.</p><span class="badge">&#9733; Most Popular</span></div></div>
+        <div class="service-full-card gsap-fade"><div class="service-full-card-head"><span class="icon">&#128133;</span><h3>Acrylic Nails</h3></div><div class="service-full-card-body"><p>Full sets and fills. Custom lengths from natural to dramatic, shaped and filed to your preference every time. Built to hold up to daily life.</p></div></div>
+        <div class="service-full-card gsap-fade"><div class="service-full-card-head"><span class="icon">&#10024;</span><h3>Dip Powder</h3></div><div class="service-full-card-body"><p>Stronger than regular polish, lighter than acrylic. No UV lamp required. Hundreds of color options, lasts 3&#8211;5 weeks with proper care.</p><span class="badge">&#9733; Staff Favorite</span></div></div>
+        <div class="service-full-card gsap-fade"><div class="service-full-card-head"><span class="icon">&#127796;</span><h3>Classic Pedicure</h3></div><div class="service-full-card-body"><p>Soak, exfoliate, trim, shape, and polish. The foundation done properly. Clean, well-maintained feet without unnecessary add-ons.</p></div></div>
+        <div class="service-full-card gsap-fade"><div class="service-full-card-head"><span class="icon">&#127796;</span><h3>Spa &amp; Luxury Pedicures</h3></div><div class="service-full-card-body"><p>Hot stone massage, paraffin wax treatment, extended massage time. The kind of pedicure you genuinely don&#8217;t want to end.</p><span class="badge">&#9733; Client Favorite</span></div></div>
+        <div class="service-full-card gsap-fade"><div class="service-full-card-head"><span class="icon">&#128131;</span><h3>Classic Manicure</h3></div><div class="service-full-card-body"><p>Hand soak, cuticle care, shaping, and your choice of polish. A clean manicure done the right way &#8212; not rushed to the next client.</p></div></div>
+        <div class="service-full-card gsap-fade"><div class="service-full-card-head"><span class="icon">&#127912;</span><h3>Nail Art</h3></div><div class="service-full-card-body"><p>Bring a photo from Pinterest, Instagram, or anywhere. The team can recreate or riff on it. No idea too intricate &#8212; calling ahead for complex designs is appreciated.</p><span class="badge">&#9733; Book Ahead</span></div></div>
+        <div class="service-full-card gsap-fade"><div class="service-full-card-head"><span class="icon">&#128138;</span><h3>Removal &amp; Repairs</h3></div><div class="service-full-card-body"><p>Safe removal of gel, acrylic, or dip powder. Single nail repairs done so they actually match the rest. No damage to your natural nails.</p></div></div>
       </div>
-
-      <div style="margin-top:3.5rem;background:var(--blush);padding:2.5rem 2rem;border-radius:4px;text-align:center;">
-        <p class="eyebrow" style="justify-content:center;">Ready to Book?</p>
-        <h3 style="font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--deep);margin-bottom:0.7rem;">Walk-ins always welcome</h3>
-        <p style="color:var(--muted);font-size:0.9rem;margin-bottom:1.5rem;">No appointment needed. For nail art or weekend visits, calling ahead is appreciated.</p>
-        <a href="tel:7207331110" class="btn-primary" style="margin-right:0.8rem;">&#128222; Call (720) 733-1110</a>
-        <a href="#" onclick="showPage('contact')" class="btn-outline">Send a Message</a>
+      <div class="book-band gsap-fade">
+        <h3>Walk-ins always welcome</h3>
+        <p>No appointment needed. For nail art or busy weekends, calling ahead is appreciated.</p>
+        <div class="book-band-btns">
+          <a href="tel:7207331110" class="btn-primary">&#128222; Call (720) 733-1110</a>
+          <a href="#" onclick="return showPage('contact')" class="btn-outline">Send a Message</a>
+        </div>
       </div>
     </div>
   </section>
+</div>
 
-</div><!-- /page-services -->
-
-<!-- ════════════════════════════
-     GALLERY / REVIEWS PAGE
-════════════════════════════ -->
+<!-- ══════════════ GALLERY / REVIEWS ══════════════ -->
 <div class="page" id="page-gallery">
-
-  <div class="gallery-hero">
+  <div class="page-hero">
     <p class="eyebrow" style="justify-content:center;">Photos &amp; Reviews</p>
     <h2 class="section-title" style="text-align:center;">See Our Work</h2>
     <p style="color:var(--muted);font-size:0.95rem;font-weight:300;max-width:440px;margin:0.5rem auto 0;line-height:1.8;">Real photos from real clients. 4.8 stars across 483 Google reviews.</p>
   </div>
-
   <div class="gallery-grid">
     <div class="gallery-item"><img src="img/photo1.jpg" alt="Nail art" /></div>
     <div class="gallery-item"><img src="img/photo2.jpg" alt="Salon" /></div>
@@ -526,96 +467,68 @@
     <div class="gallery-item"><img src="img/photo2.jpg" alt="Interior" /></div>
     <div class="gallery-item"><img src="img/photo3.jpg" alt="Service" /></div>
   </div>
-
-  <section class="section reviews-page-section">
+  <section class="section" style="background:var(--cream);">
     <div class="container">
-      <p class="eyebrow">What Clients Say</p>
-      <h2 class="section-title">483 Google reviews &#183; 4.8 stars</h2>
-      <p class="section-lead">Here&#8217;s a sample. There are 483 more on Google &#8212; all saying the same thing.</p>
+      <p class="eyebrow gsap-fade">What Clients Say</p>
+      <h2 class="section-title gsap-fade">483 Google reviews &#183; 4.8 stars</h2>
+      <p class="section-lead gsap-fade">A sample of what people consistently say &#8212; there are 483 more on Google.</p>
       <div class="reviews-all-grid">
-        <div class="review-card fade-up"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">Rose takes special care to make sure I love my nails. The staff is always so attentive. Couldn&#8217;t recommend more!</p><div class="review-author"><div class="review-avatar">MH</div><div><div class="review-name">Madison H.</div><div class="review-platform">Google</div></div></div></div>
-        <div class="review-card fade-up"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">I&#8217;ve been coming for over a year. Justin is amazing every single time &#8212; truly experienced and professional.</p><div class="review-author"><div class="review-avatar">EW</div><div><div class="review-name">Elizabeth W.</div><div class="review-platform">Google</div></div></div></div>
-        <div class="review-card fade-up"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">I went in for a pedi and did not want to leave. Best experience I&#8217;ve had at any nail salon in Castle Rock.</p><div class="review-author"><div class="review-avatar">RS</div><div><div class="review-name">Rachel S.</div><div class="review-platform">Google</div></div></div></div>
-        <div class="review-card fade-up"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">Thein always makes my nails perfect. They fit you in on short notice too. Highly recommend to anyone local!</p><div class="review-author"><div class="review-avatar">BM</div><div><div class="review-name">Briana M.</div><div class="review-platform">Google</div></div></div></div>
-        <div class="review-card fade-up"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">Found this place after a bad experience elsewhere. Night and day difference. They actually listen to what you want.</p><div class="review-author"><div class="review-avatar">KL</div><div><div class="review-name">Karen L.</div><div class="review-platform">Google</div></div></div></div>
-        <div class="review-card fade-up"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">The dip powder lasts forever on me. Clean, friendly, and they remember my regular color. Love this place.</p><div class="review-author"><div class="review-avatar">JT</div><div><div class="review-name">Jamie T.</div><div class="review-platform">Google</div></div></div></div>
+        <div class="review-card gsap-fade"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">Rose takes special care to make sure I love my nails. The staff is always so attentive. I couldn&#8217;t recommend more!</p><div class="review-author"><div class="review-avatar">MH</div><div><div class="review-name">Madison H.</div><div class="review-platform">Google</div></div></div></div>
+        <div class="review-card gsap-fade"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">I&#8217;ve been coming for over a year and Justin does my nails. He&#8217;s amazing every single time &#8212; truly professional.</p><div class="review-author"><div class="review-avatar">EW</div><div><div class="review-name">Elizabeth W.</div><div class="review-platform">Google</div></div></div></div>
+        <div class="review-card gsap-fade"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">Went in for a pedi and did not want to leave. Best nail salon experience I&#8217;ve had in Castle Rock.</p><div class="review-author"><div class="review-avatar">RS</div><div><div class="review-name">Rachel S.</div><div class="review-platform">Google</div></div></div></div>
+        <div class="review-card gsap-fade"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">Thein always makes my nails perfect. They fit me in on short notice. Highly recommend!</p><div class="review-author"><div class="review-avatar">BM</div><div><div class="review-name">Briana M.</div><div class="review-platform">Google</div></div></div></div>
+        <div class="review-card gsap-fade"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">Found this place after a bad experience elsewhere. Night and day difference. They actually listen.</p><div class="review-author"><div class="review-avatar">KL</div><div><div class="review-name">Karen L.</div><div class="review-platform">Google</div></div></div></div>
+        <div class="review-card gsap-fade"><span class="review-quote">&#8220;</span><div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="review-text">The dip powder lasts forever on me. Clean, friendly, and they remember my regular color.</p><div class="review-author"><div class="review-avatar">JT</div><div><div class="review-name">Jamie T.</div><div class="review-platform">Google</div></div></div></div>
       </div>
-      <div style="margin-top:2.5rem;text-align:center;">
-        <a href="https://www.google.com/maps/search/Happy+Canyon+Nails+%26+Spa+Castle+Rock" target="_blank" rel="noopener" class="btn-primary">Read All 483 Reviews on Google &#8599;</a>
+      <div style="margin-top:2.5rem;text-align:center;" class="gsap-fade">
+        <a href="https://www.google.com/maps/search/Happy+Canyon+Nails+Spa+Castle+Rock" target="_blank" rel="noopener" class="btn-primary">Read All 483 Reviews on Google &#8599;</a>
       </div>
     </div>
   </section>
+</div>
 
-</div><!-- /page-gallery -->
-
-<!-- ════════════════════════════
-     CONTACT PAGE
-════════════════════════════ -->
+<!-- ══════════════ CONTACT ══════════════ -->
 <div class="page" id="page-contact">
-
-  <div class="contact-hero">
+  <div class="page-hero">
     <p class="eyebrow" style="justify-content:center;">Get in Touch</p>
     <h2 class="section-title" style="text-align:center;">Contact Us</h2>
-    <p style="color:var(--muted);font-size:0.95rem;font-weight:300;max-width:400px;margin:0.5rem auto 0;line-height:1.8;">Questions, appointments, or anything else &#8212; we&#8217;re here.</p>
+    <p style="color:var(--muted);font-size:0.95rem;font-weight:300;max-width:400px;margin:0.5rem auto 0;line-height:1.8;">Questions, scheduling, or anything else &#8212; we&#8217;re happy to help.</p>
   </div>
-
-  <section class="section contact-page">
+  <section class="section" style="background:var(--cream);">
     <div class="container">
       <div class="contact-grid">
-
         <div class="contact-form">
           <h3>Send Us a Message</h3>
           <form id="contactForm" action="https://formspree.io/f/xyzgkjwp" method="POST">
             <div class="form-row">
-              <div class="form-group">
-                <label for="fname">First Name</label>
-                <input type="text" id="fname" name="first_name" placeholder="Rose" required />
-              </div>
-              <div class="form-group">
-                <label for="lname">Last Name</label>
-                <input type="text" id="lname" name="last_name" placeholder="Smith" />
-              </div>
+              <div class="form-group"><label>First Name</label><input type="text" name="first_name" placeholder="Your name" required /></div>
+              <div class="form-group"><label>Last Name</label><input type="text" name="last_name" placeholder="Last name" /></div>
             </div>
+            <div class="form-group"><label>Email Address</label><input type="email" name="email" placeholder="you@email.com" required /></div>
+            <div class="form-group"><label>Phone (optional)</label><input type="tel" name="phone" placeholder="(720) 555-0000" /></div>
             <div class="form-group">
-              <label for="email">Email Address</label>
-              <input type="email" id="email" name="email" placeholder="you@email.com" required />
-            </div>
-            <div class="form-group">
-              <label for="phone">Phone (optional)</label>
-              <input type="tel" id="phone" name="phone" placeholder="(720) 555-0000" />
-            </div>
-            <div class="form-group">
-              <label for="service">Service Interest</label>
-              <select id="service" name="service">
+              <label>Service Interest</label>
+              <select name="service">
                 <option value="">Select a service...</option>
-                <option>Gel Nails</option>
-                <option>Acrylic Nails</option>
-                <option>Dip Powder</option>
-                <option>Pedicure</option>
-                <option>Nail Art</option>
-                <option>Manicure</option>
-                <option>Other</option>
+                <option>Gel Nails</option><option>Acrylic Nails</option><option>Dip Powder</option>
+                <option>Pedicure</option><option>Nail Art</option><option>Manicure</option><option>Other</option>
               </select>
             </div>
-            <div class="form-group">
-              <label for="message">Message</label>
-              <textarea id="message" name="message" placeholder="Any questions or details about what you&#39;d like..."></textarea>
-            </div>
+            <div class="form-group"><label>Message</label><textarea name="message" placeholder="Any questions or details..."></textarea></div>
             <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">Send Message</button>
             <div class="form-success" id="formSuccess">&#10003; Message sent! We&#8217;ll get back to you soon.</div>
           </form>
         </div>
-
-        <div class="contact-info">
+        <div>
           <div class="info-card">
             <h4>Find Us</h4>
             <div class="info-row"><span class="icon">&#128205;</span><span>880 W Happy Canyon Rd #115<br />Castle Rock, CO 80108</span></div>
             <div class="info-row"><span class="icon">&#128222;</span><a href="tel:7207331110">(720) 733-1110</a></div>
-            <div class="info-row"><span class="icon">&#127795;</span><span>Walk-ins welcome &#8212; appointments appreciated on weekends</span></div>
+            <div class="info-row"><span class="icon">&#127795;</span><span>Walk-ins welcome &#8212; calling ahead appreciated on weekends</span></div>
           </div>
           <div class="info-card">
             <h4>Hours</h4>
-            <ul class="hours-compact">
+            <ul class="hours-list">
               <li><span>Mon &#8211; Fri</span><span>9:30 AM &#8211; 7:00 PM</span></li>
               <li><span>Saturday</span><span>9:30 AM &#8211; 6:00 PM</span></li>
               <li><span>Sunday</span><span>11:00 AM &#8211; 5:00 PM</span></li>
@@ -625,12 +538,10 @@
             <iframe src="https://maps.google.com/maps?q=880+W+Happy+Canyon+Rd+%23115+Castle+Rock+CO+80108&output=embed" width="100%" height="240" style="border:0;display:block;" allowfullscreen="" loading="lazy"></iframe>
           </div>
         </div>
-
       </div>
     </div>
   </section>
-
-</div><!-- /page-contact -->
+</div>
 
 <!-- ── FOOTER ── -->
 <footer>
@@ -638,7 +549,7 @@
     <div class="footer-brand">
       <div class="name">Happy Canyon Nails &amp; Spa</div>
       <div class="tagline">Castle Rock&#8217;s most-loved nail salon. Open 7 days a week, walk-ins always welcome.</div>
-      <div class="rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span>4.8 &#183; 483 reviews</span></div>
+      <div class="footer-rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span>4.8 &#183; 483 reviews</span></div>
     </div>
     <div class="footer-col">
       <h5>Pages</h5>
@@ -652,7 +563,7 @@
     <div class="footer-col">
       <h5>Services</h5>
       <ul>
-        <li><a onclick="showPage('services')">Gel Nails</a></li>
+        <li><a onclick="showPage('services')">Gel &amp; Acrylic</a></li>
         <li><a onclick="showPage('services')">Dip Powder</a></li>
         <li><a onclick="showPage('services')">Pedicures</a></li>
         <li><a onclick="showPage('services')">Nail Art</a></li>
@@ -660,77 +571,150 @@
     </div>
     <div class="footer-col">
       <h5>Contact</h5>
-      <p>880 W Happy Canyon Rd #115<br />Castle Rock, CO 80108<br /><br /><a href="tel:7207331110">(720) 733-1110</a><br /><br />Mon&#8211;Fri: 9:30 AM&#8211;7 PM<br />Sat: 9:30 AM&#8211;6 PM<br />Sun: 11 AM&#8211;5 PM</p>
+      <p>880 W Happy Canyon Rd #115<br />Castle Rock, CO 80108<br /><br /><a href="tel:7207331110">(720) 733-1110</a><br /><br />Mon&#8211;Fri 9:30 AM&#8211;7 PM<br />Sat 9:30 AM&#8211;6 PM<br />Sun 11 AM&#8211;5 PM</p>
     </div>
   </div>
-  <div class="footer-bottom">&copy; 2026 Happy Canyon Nails &amp; Spa &nbsp;&#183;&nbsp; Castle Rock, CO</div>
+  <div class="footer-bottom">&copy; 2026 Happy Canyon Nails &amp; Spa &#183; Castle Rock, CO</div>
 </footer>
 
 <script>
-  // Page routing
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ── PAGE ROUTING ── */
   function showPage(id) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('page-' + id).classList.add('active');
+    const current = document.querySelector('.page.active');
+    const next = document.getElementById('page-' + id);
+    if (!next || current === next) return false;
+
+    gsap.to(current, { opacity: 0, y: -18, duration: 0.28, ease: 'power2.in', onComplete: () => {
+      current.classList.remove('active');
+      current.style.opacity = '';
+      current.style.transform = '';
+      next.classList.add('active');
+      gsap.fromTo(next, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.38, ease: 'power2.out' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      initScrollAnimations();
+    }});
+
     document.querySelectorAll('.nav-links a[id^="nav-"]').forEach(a => a.classList.remove('active'));
     const navEl = document.getElementById('nav-' + id);
     if (navEl) navEl.classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    observeFadeUps();
     return false;
   }
 
-  // Mobile menu
+  /* ── MOBILE MENU ── */
   function toggleMenu() {
-    const menu = document.getElementById('mobileMenu');
-    const burger = document.getElementById('hamburger');
-    menu.classList.toggle('open');
-    burger.classList.toggle('open');
+    document.getElementById('mobileMenu').classList.toggle('open');
+    document.getElementById('hamburger').classList.toggle('open');
   }
 
-  // Nav shadow on scroll
-  const nav = document.getElementById('nav');
-  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 10), { passive: true });
+  /* ── NAV SHADOW ── */
+  window.addEventListener('scroll', () => {
+    document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 10);
+  }, { passive: true });
 
-  // Fade-up on scroll
-  function observeFadeUps() {
-    const els = document.querySelectorAll('.fade-up:not(.visible)');
-    if (!els.length) return;
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e, i) => {
-        if (e.isIntersecting) {
-          setTimeout(() => e.target.classList.add('visible'), i * 80);
-          io.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    els.forEach(el => io.observe(el));
+  /* ── HERO ANIMATIONS ── */
+  function initHero() {
+    const tl = gsap.timeline({ delay: 0.1 });
+    tl.to('#hero-pill', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' })
+      .to('.word-inner', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.1 }, '-=0.3')
+      .to('#hero-sub', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, '-=0.3')
+      .to('#hero-rating', { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, '-=0.2')
+      .to('#hero-actions', { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, '-=0.2');
   }
-  observeFadeUps();
 
-  // Contact form
-  const form = document.getElementById('contactForm');
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = form.querySelector('button[type="submit"]');
-      btn.textContent = 'Sending...';
-      btn.disabled = true;
-      try {
-        const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
-        if (res.ok) {
-          form.reset();
-          document.getElementById('formSuccess').style.display = 'block';
-          btn.textContent = 'Sent!';
-        } else {
-          btn.textContent = 'Try again';
-          btn.disabled = false;
+  /* ── SCROLL ANIMATIONS ── */
+  function initScrollAnimations() {
+    ScrollTrigger.getAll().forEach(t => t.kill());
+    document.querySelectorAll('.gsap-fade').forEach((el, i) => {
+      gsap.fromTo(el,
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%', once: true }
         }
-      } catch {
-        btn.textContent = 'Try again';
-        btn.disabled = false;
+      );
+    });
+  }
+
+  /* ── COUNTER ANIMATIONS ── */
+  function initCounters() {
+    const counters = document.querySelectorAll('[data-count]');
+    if (!counters.length) return;
+    const trigger = counters[0].closest('.stats-bar');
+    if (!trigger) return;
+
+    ScrollTrigger.create({
+      trigger,
+      start: 'top 80%',
+      once: true,
+      onEnter: () => {
+        counters.forEach(el => {
+          const target = parseFloat(el.dataset.count);
+          const decimals = parseInt(el.dataset.decimals || 0);
+          gsap.fromTo({ val: 0 }, { val: target, duration: 1.8, ease: 'power2.out',
+            onUpdate: function() {
+              el.textContent = this.targets()[0].val.toFixed(decimals);
+            }
+          });
+        });
       }
     });
   }
+
+  /* ── CUSTOM CURSOR ── */
+  const cursor = document.getElementById('cursor');
+  let mx = -100, my = -100, cx = -100, cy = -100;
+
+  if (window.matchMedia('(hover: hover)').matches) {
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+
+    (function loop() {
+      cx += (mx - cx) * 0.12;
+      cy += (my - cy) * 0.12;
+      cursor.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%)`;
+      requestAnimationFrame(loop);
+    })();
+
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
+    });
+  }
+
+  /* ── MAGNETIC BUTTONS ── */
+  if (window.matchMedia('(hover: hover)').matches) {
+    document.querySelectorAll('.magnetic').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2);
+        const dy = e.clientY - (r.top + r.height / 2);
+        gsap.to(el, { x: dx * 0.28, y: dy * 0.28, duration: 0.3, ease: 'power2.out' });
+      });
+      el.addEventListener('mouseleave', () => {
+        gsap.to(el, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.4)' });
+      });
+    });
+  }
+
+  /* ── CONTACT FORM ── */
+  const form = document.getElementById('contactForm');
+  if (form) {
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = form.querySelector('button[type="submit"]');
+      btn.textContent = 'Sending...'; btn.disabled = true;
+      try {
+        const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+        if (res.ok) { form.reset(); document.getElementById('formSuccess').style.display = 'block'; btn.textContent = 'Sent!'; }
+        else { btn.textContent = 'Try again'; btn.disabled = false; }
+      } catch { btn.textContent = 'Try again'; btn.disabled = false; }
+    });
+  }
+
+  /* ── INIT ── */
+  initHero();
+  initScrollAnimations();
+  initCounters();
 </script>
 
 </body>
