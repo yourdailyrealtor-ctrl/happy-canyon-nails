@@ -78,17 +78,7 @@
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
-    /* ── CUSTOM CURSOR (desktop only) ── */
-    .cursor {
-      position: fixed; top: 0; left: 0; z-index: 10000; pointer-events: none;
-      width: 12px; height: 12px;
-      background: var(--rose); border-radius: 50%;
-      transform: translate(-50%, -50%);
-      transition: width 0.25s, height 0.25s, background 0.25s, opacity 0.25s;
-      will-change: transform;
-    }
-    .cursor.hovered { width: 32px; height: 32px; background: var(--rose2); opacity: 0.6; }
-    @media (hover: none) { .cursor { display: none; } }
+    /* cursor removed */
 
     /* ── NAV ── */
     nav {
@@ -353,8 +343,7 @@
   align-items:center; gap:0.4rem;
 ">&#128222; Call Now</a>
 
-<!-- Custom cursor -->
-<div class="cursor" id="cursor"></div>
+
 
 <!-- ── NAV ── -->
 <nav id="nav">
@@ -710,25 +699,7 @@
     });
   }
 
-  /* ── CUSTOM CURSOR ── */
-  const cursor = document.getElementById('cursor');
-  let mx = -100, my = -100, cx = -100, cy = -100;
 
-  if (window.matchMedia('(hover: hover)').matches) {
-    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-
-    (function loop() {
-      cx += (mx - cx) * 0.12;
-      cy += (my - cy) * 0.12;
-      cursor.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%)`;
-      requestAnimationFrame(loop);
-    })();
-
-    document.querySelectorAll('a, button').forEach(el => {
-      el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
-      el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
-    });
-  }
 
   /* ── MAGNETIC BUTTONS ── */
   if (window.matchMedia('(hover: hover)').matches) {
